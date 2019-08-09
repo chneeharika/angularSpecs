@@ -1,0 +1,317 @@
+describe('ccclosure.components.accountlist', function() {
+	var $compile, $rootScope, controller, el,accountlistObj=[],accountSelected,
+	baseRestangularFactoryMock = function(){
+        return {
+            channel : "sol"
+        };
+
+    },
+    contentManagementFactoryMock = function () {
+    	return {
+    		branddata : {
+	            customercare : "Customer Care"
+	        }
+    	};
+    },
+    ccclosureAccountlistMock = function () {
+    	return {
+			getAccountList: function (fn) { fn(accountlistObj);}
+    	};
+    },
+    ccclosureEnvironmentsdataMock = function () {
+    	return {
+    		refData : {pBalFlag:true}
+    	};
+    },
+    ccclosureApplicationdataMock = function () {
+    	return {
+   			reasonData : {
+		      reason: null,
+		      othertext: null
+		    },
+    		getSelectedCard : function () {return accountSelected;},
+			getUserData: function () {
+				return {
+					brand : "ce"
+				};
+			},
+			setSelectedCard : function () { return true;}
+    	};
+    },
+    accountList = [
+		            {
+		                "accountNumber": "xxxx xxxx xx35 4675",
+		                "accountEligibilityFlag": true,
+		                "accountBlockCode1": "B",
+		                "blockCode1Desc": "Block code B is currently placed on this card. Customer is either Bakrupt or Insolvent. Please refer to Collections.",
+		                "accountBlockCode2": "",
+		                "ec": "4f2f41f3615f63d718908d5120674087341bb14e726eb18c7ed2eb48df1255b1",
+		                "logo": "404",
+		                "ctype": "Low Rate Visa Card",
+		                "currentBalance": "1000",
+		                "currentBalCurrency": "AUD",
+		                "currentBalPosition": "CR",
+		                "availableBalance": "2000",
+		                "availableBalCurrency": "AUD",
+		                "availableBalPosition": "CR",
+		                "brand":"WBC"
+		            },
+		            {
+		                "accountNumber": "xxxx xxxx xx35 4675",
+		                "accountEligibilityFlag": true,
+		                "accountBlockCode1": "Z",
+		                "blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+		                "accountBlockCode2": "T",
+		                "blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+		                "ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24eb",
+		                "logo": "407",
+		                "ctype": "Westpac Lite Visa Card",
+		                "currentBalance": "2000",
+		                "currentBalCurrency": "AUD",
+		                "currentBalPosition": "DR",
+		                "availableBalance": "500",
+		                "availableBalCurrency": "AUD",
+		                "availableBalPosition": "DR",
+		                "brand": "WBC"
+		            },
+		            {
+		                "accountNumber": "xxxx xxxx xx35 4675",
+		                "accountEligibilityFlag": false,
+		                "accountBlockCode1": "Z",
+		                "blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+		                "accountBlockCode2": "T",
+		                "blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+		                "ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24eb",
+		                "logo": "407",
+		                "ctype": "Westpac Lite Visa Card",
+		                "currentBalance": "0",
+		                "currentBalCurrency": "AUD",
+		                "currentBalPosition": "CR",
+		                "availableBalance": "500",
+		                "availableBalCurrency": "AUD",
+		                "availableBalPosition": "CR",
+		                "brand": "WBC"
+					},
+					{
+		                "accountNumber": "xxxx xxxx xx35 4676",
+		                "accountEligibilityFlag": false,
+		                "accountBlockCode1": "Z",
+		                "blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+		                "accountBlockCode2": "T",
+		                "blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+		                "ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24ee",
+		                "logo": "200",
+		                "ctype": "Flexi Loan",
+		                "currentBalance": "0",
+		                "currentBalCurrency": "AUD",
+		                "currentBalPosition": "CR",
+		                "availableBalance": "0",
+		                "availableBalCurrency": "AUD",
+		                "availableBalPosition": "CR",
+		                "brand": "WBC"
+		            }
+		        ],
+    positiveBal = [{
+    	"accountNumber": "xxxx xxxx xx35 4675",
+        "accountEligibilityFlag": true,
+        "accountBlockCode1": "B",
+        "blockCode1Desc": "Block code B is currently placed on this card. Customer is either Bakrupt or Insolvent. Please refer to Collections.",
+        "accountBlockCode2": "",
+        "ec": "4f2f41f3615f63d718908d5120674087341bb14e726eb18c7ed2eb48df1255b1",
+        "logo": "404",
+        "ctype": "Low Rate Visa Card",
+        "currentBalance": "1000",
+        "currentBalCurrency": "AUD",
+        "currentBalPosition": "CR",
+        "availableBalance": "2000",
+        "availableBalCurrency": "AUD",
+        "availableBalPosition": "CR",
+        "brand":"WBC"
+	},
+
+	{
+		"accountNumber": "xxxx xxxx xx35 4676",
+		"accountEligibilityFlag": false,
+		"accountBlockCode1": "Z",
+		"blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+		"accountBlockCode2": "T",
+		"blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+		"ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24ee",
+		"logo": "200",
+		"ctype": "Flexi Loan",
+		"currentBalance": "1000",
+		"currentBalCurrency": "AUD",
+		"currentBalPosition": "CR",
+		"availableBalance": "500",
+		"availableBalCurrency": "AUD",
+		"availableBalPosition": "CR",
+		"brand": "WBC"
+	}
+],
+    negativeBal = [{
+    	"accountNumber": "xxxx xxxx xx35 4675",
+        "accountEligibilityFlag": true,
+        "accountBlockCode1": "Z",
+        "blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+        "accountBlockCode2": "T",
+        "blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+        "ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24eb",
+        "logo": "407",
+        "ctype": "Westpac Lite Visa Card",
+        "currentBalance": "2000",
+        "currentBalCurrency": "AUD",
+        "currentBalPosition": "DR",
+        "availableBalance": "500",
+        "availableBalCurrency": "AUD",
+        "availableBalPosition": "DR",
+        "brand": "WBC"
+	},
+
+	
+	{
+		"accountNumber": "xxxx xxxx xx35 4676",
+		"accountEligibilityFlag": false,
+		"accountBlockCode1": "Z",
+		"blockCode1Desc": "Block code Z is currently placed on this card. Requested for closure. Please refer to account maintenance notes.",
+		"accountBlockCode2": "T",
+		"blockCode2Desc": "Block code T is currently placed on this card. Card transferred to another product. Please refer to account maintenance notes.",
+		"ec": "8c1379d651b2e8d3463d650ec8cbd09446c788342e2b8a1866643a10901a24ee",
+		"logo": "200",
+		"ctype": "Flexi Loan",
+		"currentBalance": "1000",
+		"currentBalCurrency": "AUD",
+		"currentBalPosition": "DR",
+		"availableBalance": "500",
+		"availableBalCurrency": "AUD",
+		"availableBalPosition": "DR",
+		"brand": "WBC"
+	}
+];
+
+	// Load the module, which contains Header
+	beforeEach(function () {
+			angular.mock.module('ccclosure.components.accountlist');
+			angular.mock.module('ccclosure.factories');
+        	angular.mock.module('ccclosure.factories.core');
+        	angular.mock.module('ccclosure.factories.restangular');
+        	angular.mock.module('ui.router');
+        	module(function ($provide) {
+	            $provide.factory('baseRestangularFactory', baseRestangularFactoryMock);
+	            $provide.factory('contentManagementFactory', contentManagementFactoryMock);
+	            $provide.factory('ccclosureAccountlist', ccclosureAccountlistMock);
+	            $provide.factory('ccclosureEnvironmentsdata', ccclosureEnvironmentsdataMock);
+	            $provide.factory('ccclosureApplicationdata', ccclosureApplicationdataMock);
+	        });
+    });
+
+	// Store references to $rootScope and $compile
+	// so they are available to all tests in this describe block
+	beforeEach(inject(function(_$q_, _$compile_, _$rootScope_, _baseRestangularFactory_, _$state_, _contentManagementFactory_,_ccclosureAccountlist_, _ccclosureEnvironmentsdata_, _ccclosureApplicationdata_){
+		// The injector unwraps the underscores (_) from around the parameter names when matching
+		$q = _$q_;
+		$compile = _$compile_;
+		$rootScope = _$rootScope_;
+		baseRestangularFactory = _baseRestangularFactory_;
+		$state = _$state_;
+		contentManagementFactory = _contentManagementFactory_;
+		ccclosureAccountlist = _ccclosureAccountlist_;
+		ccclosureEnvironmentsdata = _ccclosureEnvironmentsdata_;
+		ccclosureApplicationdata = _ccclosureApplicationdata_;
+		spyOn($state,"go");
+	}));
+
+	// example nested describe
+
+	describe("check controller defined", function () {
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-accountlist accounts="accounts" hide-balance="hideBalance"></ccclosure-accountdetails>');
+            scope = $rootScope.$new();
+            scope.accounts = "";
+			scope.hideBalance = "";
+			accountSelected = true;
+         	var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureAccountlist');
+            ccclosureAccountlist.getAccountList = function () {
+            	return $q.when(accountList);
+            };
+            accountlistObj = positiveBal;
+        });
+        it("check controller is defined", function () {
+        	expect(controller).toBeDefined();
+	    });
+        it("check controller on load", function () { 
+	         expect(JSON.stringify(controller.accountList)).toEqual(JSON.stringify([positiveBal[0]]));
+            expect(JSON.stringify(controller.flList)).toEqual(JSON.stringify([positiveBal[1]]));
+            expect(controller.contact).toEqual("Customer Care");
+			expect(controller.locator).toEqual("//www.westpac.com.au/locateus/#/?appAction=exit");
+			expect(controller.isSol).toEqual(true);
+			expect(controller.isAccountSelected).toEqual(true);
+	    });
+    });
+
+	describe('account-list methods', function() {
+
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-accountlist></ccclosure-accountdetails>');
+            scope = $rootScope.$new();
+            accountSelected = true;
+            var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureAccountlist');
+        });
+
+		it("accountSelected when sol", function () {
+            controller.isSol = false;
+            ccclosureAccountlist.getAccountList = function () {
+            	return $q.when(positiveBal);
+			};
+			accountlistObj = positiveBal;
+            controller.accountSelected(positiveBal);
+			expect($state.go).toHaveBeenCalled();
+	    });
+
+		it("accountSelected", function () {
+			controller.isSol = false;
+			ccclosureAccountlist.getAccountList = function () {
+            	return $q.when(negativeBal);
+			};
+			accountlistObj = negativeBal;
+            controller.accountSelected(negativeBal);
+			expect($state.go).toHaveBeenCalled();
+	    });
+
+		it("accountSelected when wol", function () {
+			spyOn(ccclosureApplicationdata, "setSelectedCard");
+			controller.isSol = true;
+			controller.accountSelected(positiveBal);
+			expect(ccclosureApplicationdata.setSelectedCard).toHaveBeenCalled();
+		});
+		
+		it("accountSelected when sol with FL", function () {
+			spyOn(ccclosureApplicationdata, "setSelectedCard");
+			controller.isSol = true;
+			accountlistObj = accountList;
+			controller.accountSelected(positiveBal);
+			expect(ccclosureApplicationdata.setSelectedCard).toHaveBeenCalled();
+	    });
+
+	});
+	describe('account is not selected', function() {
+
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-accountlist></ccclosure-accountdetails>');
+            scope = $rootScope.$new();
+            accountSelected = false;
+            var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureAccountlist');
+        });
+
+		it("account is not Selected", function () {
+			expect(controller.isAccountSelected).toEqual(undefined);
+	    });
+
+	});
+
+});
