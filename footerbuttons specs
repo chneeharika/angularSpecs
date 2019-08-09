@@ -1,0 +1,407 @@
+
+describe('ccclosure.components.footerbuttons', function() {
+	var $compile, $rootScope, controller, el,
+	baseRestangularFactoryMock = function(){
+        return {
+            channel : "sol"
+        };
+    },
+    contentManagementFactoryMock = function () {
+            return {
+                basenode : {
+                    branddata: {
+                        customercare: "Customer Care"
+                    }
+                }
+            };
+    },
+    ccclosureApplicationdataMock = function () {
+    	return {
+    		reasonData : {
+		      reason: "008",
+		      othertext: "Flexi Loan"
+		    },
+		    isDonated : {
+		      selected: "Yes"
+		    },
+		    redirectURI : {
+	    		'westpacLiveDashboard': '/secure/banking/overview/dashboard'
+	    	},
+	    	getSelectedCard : function () {
+	    		return {currentBalance : 100, brand :"ce"};
+			},
+			getUserData: function() {
+				return {brand: 'ce' };
+			}
+    	};
+    },
+    ccclosureBalanceFactoryMock = function () {
+    	return {
+    		setPayout : function (fn) { fn(); },
+    		// function () {
+		  //   	return {
+				//   "status": "Success",
+				//   "resource": "payoutquote",
+				//   "successResult": {
+				//       "balanceAmount": "100",
+				//       "currencyCode": "AUD",
+				//       "position": "CR"
+				//   },
+				//   "errorResult": null
+				// };
+		    // },
+		    invokeClosure : function () {
+		    	return {
+				    "status": "Success",
+				    "resource": "cardclosure",
+				    "successResult": {
+				        "requestIdentifier": "string"
+				    },
+				    "errorResult": null
+				};
+			},
+			getPayout : function() {
+		    	return { "balanceAmount": 100 };
+			}
+    	};
+    },
+    ccclosureAccountlistMock = function () {
+    	return {
+    		// reset : function () {
+    		// 	return [];
+    		// }
+    	};
+    },
+    appFormInvalid = {
+            	$valid :false
+            },
+    appFormValid = {
+            	$valid :true,
+            	$dirty:true,
+            	$setUntouched : function () {},
+            	$setPristine : function () {appFormValid.$dirty = false;}
+            };
+    var windowObj = function () {
+    	return {
+    		parent : function scrollTo(){}
+    	};
+    };
+
+	// Load the module, which contains Header
+	beforeEach(function () {
+			angular.mock.module('ccclosure.components.footerbuttons');
+			angular.mock.module('ccclosure.factories', 'ccclosure.common.modal');
+        	angular.mock.module('ccclosure.factories.core');
+        	angular.mock.module('ccclosure.factories.restangular');
+        	angular.mock.module('ui.router');
+        	module(function ($provide) {
+	            $provide.factory('baseRestangularFactory', baseRestangularFactoryMock);
+	            $provide.factory('ccclosureApplicationdata', ccclosureApplicationdataMock);
+	            $provide.factory('ccclosureBalanceFactory', ccclosureBalanceFactoryMock);
+                $provide.factory('contentManagementFactory', contentManagementFactoryMock);
+	            $provide.factory('window', windowObj);
+	        });
+    });
+
+	// Store references to $rootScope and $compile
+	// so they are available to all tests in this describe block
+	beforeEach(inject(function(_$compile_, _$rootScope_, _baseRestangularFactory_, _$state_, _$timeout_, _ccclosureAccountlist_, _ccclosureBalanceFactory_, _modalFactory_, _contentManagementFactory_, _ccclosureApplicationdata_, _window_){
+		// The injector unwraps the underscores (_) from around the parameter names when matching
+		$compile = _$compile_;
+		$rootScope = _$rootScope_;
+		baseRestangularFactory = _baseRestangularFactory_;
+		$state = _$state_;
+		$timeout = _$timeout_;
+		ccclosureAccountlist = _ccclosureAccountlist_;
+		ccclosureBalanceFactory = _ccclosureBalanceFactory_;
+        contentManagementFactory = _contentManagementFactory_;
+        ccclosureApplicationdata = _ccclosureApplicationdata_;
+        window = _window_;
+	}));
+
+	// example nested describe
+	describe('footerbuttons', function() {
+
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-footerbuttons app-form="appForm"></ccclosure-footerbuttons>');
+            scope = $rootScope.$new();
+            var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureFooterbuttons');
+        });
+
+		it("check controller defined", function () {
+			expect(controller).toBeDefined();
+        });
+
+		it("continue", function () {
+			scope.appForm = appFormInvalid;
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+        });
+
+		it("continue when valid", function () {
+			spyOn($state, "go");
+			scope.appForm = appFormValid;
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect(controller.appForm.$dirty).toBe(false);
+			expect($state.go).toHaveBeenCalled();
+        });
+
+		it("continue when valid and state", function () {
+			spyOn($state, "go");
+			scope.appForm = appFormValid;
+			$state.current.name = "ccclosure.reasons";
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect(controller.appForm.$dirty).toBe(false);
+			//expect($state.go).toHaveBeenCalledWith(controller.next);
+        });
+
+		it("continue when valid and currentBalance < 0", function () {
+			spyOn($state, "go");
+			scope.appForm = appFormValid;
+			$state.current.name = "ccclosure.reasons";
+			ccclosureApplicationdata.getSelectedCard = function () {
+				return $q.when({currentBalance: -1});
+			};
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect(controller.appForm.$dirty).toBe(false);
+			//expect($state.go).toHaveBeenCalled();
+        });
+
+		it("continue when valid and state balanceowing", function () {
+			spyOn(controller, "closure");
+			scope.appForm = appFormValid;
+			$state.current.name = "ccclosure.balanceowing";
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect(controller.closure).toHaveBeenCalled();
+        });
+
+		it("continue when valid and state error", function () {
+			spyOn(controller, "cancel");
+			scope.appForm = appFormValid;
+			$state.current.name = "ccclosure.error";
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect(controller.cancel).toHaveBeenCalled();
+        });
+
+		it("cancel", function () {
+			spyOn($state, "go");
+			spyOn(ccclosureAccountlist,"reset");
+			controller.secondary_name = "Cancel";
+			$rootScope.$digest();
+			controller.cancel();
+			expect(ccclosureAccountlist.reset).toHaveBeenCalled();
+			expect($state.go).toHaveBeenCalled();
+        });
+
+
+		it("iframe scroll", function () {
+			spyOn($state, "go");
+			spyOn(window, 'parent');
+			scope.appForm = appFormInvalid;
+			controller.isSOL = false;
+			$state.current.name = "ccclosure.accountlist";
+			window.parent.scrollTo = function () {return true;};
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+        });
+
+        it("iframe scroll when window.parent is false", function () {
+			spyOn($state, "go");
+			spyOn(window, 'parent');
+			scope.appForm = appFormInvalid;
+			controller.isSOL = false;
+			$state.current.name = "ccclosure.accountlist";
+			window.parent = false;
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+        });
+
+	});
+	describe('footerbuttons for Flexi Loan closure', function() {
+
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-footerbuttons app-form="appForm"></ccclosure-footerbuttons>');
+            scope = $rootScope.$new();
+            var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureFooterbuttons');			
+        });        
+
+		it("default state", function () {
+			spyOn($state, "go");
+			scope.appForm = appFormValid;
+			controller.isSOL = true;
+			$state.current.name = "ccclosure.accountlist";
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return {logo : "200"};
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+			$rootScope.$digest();
+			controller.continue();
+			$timeout.flush();
+			expect($state.go).toHaveBeenCalled();
+        });
+
+        it("closure method", function () {
+			spyOn($state, "go");
+			controller.isSOL = true;
+			$state.current.name = "ccclosure.accountlist";
+			
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return {logo : "200"};
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+
+			$rootScope.$digest();
+			controller.closure();
+			expect($state.go).toHaveBeenCalled();
+        });
+
+        it("closure method when isSOL is false", function () {
+			spyOn($state, "go");
+			controller.isSOL = false;
+			$state.current.name = "ccclosure.accountlist";
+			
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return {logo : "200"};
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+
+			$rootScope.$digest();
+			controller.closure();
+        });
+
+        it("closure method when no card is selected", function () {
+			spyOn($state, "go");
+			controller.isSOL = true;
+			$state.current.name = "ccclosure.accountlist";
+			
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return null;
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+
+			$rootScope.$digest();
+			controller.closure();
+        });
+
+        it("closure method when logo is not 200", function () {
+			spyOn($state, "go");
+			controller.isSOL = true;
+			$state.current.name = "ccclosure.accountlist";
+			
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return {logo : "201"};
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+
+			$rootScope.$digest();
+			controller.closure();
+        });
+
+        it("closure method when payout balance is less than 0", function () {
+			spyOn($state, "go");
+			controller.isSOL = true;
+			$state.current.name = "ccclosure.accountlist";
+			
+			ccclosureApplicationdata.getSelectedCard = function() { 
+				return {logo : "200"};
+			};
+
+            ccclosureApplicationdata.getUserData = function() { 
+            	return {brand : "wbc"};
+			};
+
+			ccclosureBalanceFactory.getPayout = function() {
+		    	return { "balanceAmount": -1 };
+			};
+
+			$rootScope.$digest();
+			controller.closure();
+        });
+
+	});
+	describe('footerbuttons on stateChangeSuccess', function() {
+
+		beforeEach(function () {
+        	el = angular.element('<ccclosure-footerbuttons app-form="appForm"></ccclosure-footerbuttons>');
+            scope = $rootScope.$new();
+            var compiledElement = $compile(el)(scope);
+            $rootScope.$digest();
+            controller = compiledElement.controller('ccclosureFooterbuttons');
+            var dummyElement = [{scrollIntoView:function(){}}];
+			document.getElementsByTagName = jasmine.createSpy('HTML Element').and.returnValue(dummyElement);
+        });
+
+		it("when state is finalscreen", function () {
+			spyOn(ccclosureApplicationdata,"getSelectedCard").and.returnValue({currentBalance:-1});
+			scope.appForm = appFormValid;
+			$rootScope.$broadcast('$stateChangeSuccess', {name:'ccclosure.finalscreen'});
+			$rootScope.$digest();
+        	expect(controller.makeSecondary).toEqual(false);
+        });
+
+		it("when state is error", function () {
+			spyOn(ccclosureApplicationdata,"getSelectedCard").and.returnValue({currentBalance:-1});
+			scope.appForm = appFormValid;
+			$rootScope.$broadcast('$stateChangeSuccess', {name:'ccclosure.error'}, {reason:'timeout'});
+			$rootScope.$digest();
+        	expect(controller.makeSecondary).toEqual(false);
+        });
+
+		it("when state is balanceowing", function () {
+			spyOn(ccclosureApplicationdata,"getSelectedCard").and.returnValue({logo:'200'});
+			spyOn(ccclosureBalanceFactory,"getPayout").and.returnValue({balanceAmount:100});
+			spyOn(ccclosureApplicationdata,"getUserData").and.returnValue({brand:'wbc'});
+			controller.isSOL = true;
+			scope.appForm = appFormValid;
+			$rootScope.$broadcast('$stateChangeSuccess', {name:'ccclosure.balanceowing'});
+			$rootScope.$digest();
+        	expect(controller.disabled_primary).toEqual(true);
+        });
+
+		it("when state is balanceowing", function () {
+			spyOn(ccclosureApplicationdata,"getSelectedCard").and.returnValue({logo:'200'});
+			spyOn(ccclosureBalanceFactory,"getPayout").and.returnValue({balanceAmount:100});
+			spyOn(ccclosureApplicationdata,"getUserData").and.returnValue({brand:'ce'});
+			controller.isSOL = false;
+			scope.appForm = appFormValid;
+			$rootScope.$broadcast('$stateChangeSuccess', {name:'ccclosure.balanceowing'});
+			$rootScope.$digest();
+        	expect(controller.disabled_primary).toEqual(false);
+        });
+
+	});
+
+});
+
