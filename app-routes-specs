@@ -1,0 +1,68 @@
+describe('ccclosure.app', function() {
+	var $rootScope,
+	controller,$state,scope,state;
+	// Load the module, which contains App-layout
+	beforeEach(angular.mock.module('ui.router'));
+	beforeEach(angular.mock.module('ccclosure'));
+	beforeEach(inject(function (_$rootScope_,_$state_){
+		// The injector unwraps the underscores (_) from around the parameter names when matching
+		$rootScope = _$rootScope_;
+		scope = $rootScope.$new();
+		$state = _$state_;
+		
+	}));
+	// example nested describe
+	describe('test', function () {
+		it('test ccclosure views', function() {
+			state = $state.get('ccclosure');
+			var contentState = 'content', footerState = 'footer', headerState = 'header',dtmState= 'dtm';
+			var content = state.views[contentState];
+			var footer = state.views[footerState];
+            var header = state.views[headerState];
+            // var dtm = state.views[dtmState];
+			//expect(content.template).toEqual('<div class="container"><span ng-class="{\'ccclosure-invalid\':vm.isSolChannel}"><div ng-class="{\'col-sm-offset-2\': !vm.isSolChannel, \'col-sm-8\': !vm.isSolChannel, \'col-sm-12\': vm.isSolChannel}" class="col-xs-12 ccclosure-container-mobile"><ccclosure-back-button ng-if="channel===\'sol\' && $root.showBack"></ccclosure-back-button><h2 class="top-margin5-xs left" style="font-weight:500">{{title}}</h2><button type="button" class="top-margin4-xs right btn btn-secondary btn-lg btn-neutral btn-soft" ng-if="canShowPrint" ng-click="print()"><span class="text-icon icon icon-small icon-print col-xs-12" data-grunticon-embed></span> Print summary</button><form name="appForm" novalidate><div class="alert alert-danger alert-box no-bottom-margin-xs ccclosure-invalid" role="alert" ng-if="appForm.$submitted && errorField && appForm[errorField].$error.required"><div class="alert-body">{{errorMsg}}</div></div><div class="col-xs-12"  style="padding-left: 0;"><div class="ccclosure-app-layout__main" ui-view></div></div><ccclosure-footerbuttons app-form="appForm"></ccclosure-footerbuttons><p class="no-top-margin-xs bottom-margin6-xs col-xs-12 ccclosure-no-padding" ng-if="showInfo && !vm.isSolChannel">Have questions about account closure? <a ng-href="{{faq}}" target="_blank">Visit the FAQ\'s page.</a></p></form></div></div>');
+            expect(footer.template).toEqual('<ccclosure-footer brand="$root.brand"></ccclosure-footer>');
+            // expect(dtm.template).toEqual( '<ccclosure-dtm ng-if="!vm.isSolChannel"></ccclosure-dtm>');
+			expect(header.template).toEqual('<ccclosure-header show-back="$root.showBack"></ccclosure-header>');
+			expect(state.abstract).toBe(true);
+			expect(content.controller).toBeDefined();
+		});
+		it('test reasons state', function() {
+			state = $state.get('ccclosure.reasons');
+			 expect(state.template).toEqual('<ccclosure-reason app-form="appForm"></ccclosure-reason>');
+			 expect(state.url).toEqual('/reasons');
+			 expect(state.controller).toBeUndefined();
+			 //expect(a.bar).not.toBeDefined();
+		});
+
+		it('test accountlist state', function() {
+			state = $state.get('ccclosure.accountlist');
+			 expect(state.template).toEqual('<ccclosure-accountlist></ccclosure-accountlist>');
+			 expect(state.url).toEqual('/accountlist');
+			 expect(state.controller).toBeUndefined();
+		});
+		it('test balanceowing state', function() {
+			state = $state.get('ccclosure.balanceowing');
+			 expect(state.template).toEqual('<ccclosure-balance-owing app-form="appForm"></ccclosure-balance-owing>');
+			 expect(state.url).toEqual('/balanceowing');
+			 expect(state.controller).toBeUndefined();
+		}); 
+		it('error state ', function() {
+			state = $state.get('ccclosure.error');
+			expect(state.template).toEqual('<div ng-switch on="reason"><div ng-switch-when = "cancel"><ccclosure-cancel></ccclosure-cancel></div><div ng-switch-when = "timeout"><ccclosure-timeout><ccclosure-timeout></div><div ng-switch-when="nocardsfound"><ccclosure-nocardsfound></ccclosure-nocardsfound></div><div ng-switch-when="positiveBal"><ccclosure-positivebal></ccclosure-positivebal></div><div ng-switch-when="cycleDateError"> <ccclosure-cycledate></ccclosure-cycledate></div><div ng-switch-when="deviceExempted"><ccclosure-device-exempted></ccclosure-device-exempted></div><div ng-switch-when="device_suspended"><ccclosure-device-suspended></ccclosure-device-suspended></div><div ng-switch-when="token_suspended"><ccclosuretoken-suspended></ccclosuretoken-suspended></div><div ng-switch-when="noSecurityDevice"><ccclosure-no-security-device></ccclosure-no-security-device></div><div ng-switch-when="safigenericError"><ccclosure-safigeneric></ccclosure-safigeneric></div><div ng-switch-default><ccclosure-generic><ccclosure-generic></div></div>');
+			expect(state.url).toEqual('/error/:reason');
+			expect(state.controller).toBeDefined();
+		});
+
+		it('test scope is visible', function() {
+//             $state.go("ccclosure.accountlist"); 
+            $rootScope.$broadcast('$stateChangeSuccess', {name:'ccclosure'});
+             console.log("controllera State::",$state.get());
+             console.log("controllera scope.title",scope.brand);
+            // expect(scope).toBeDefined();
+            
+             //expect(a.bar).not.toBeDefined();
+        }); 
+		
+	});
+});
